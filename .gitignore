@@ -1,0 +1,16 @@
+*.pyo
+*.pyc
+*.egg-info
+*.cache
+*.orig
+*.swp
+*.rej
+._*
+*~
+*.o
+.build
+docs/_build
+.project
+.pydevproject
+.settings
+tmp
