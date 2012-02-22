@@ -14,8 +14,7 @@ class AssetSchema(colander.MappingSchema):
     # filename is _id
     content_length = colander.SchemaNode(colander.Integer())
     content_type = colander.SchemaNode(colander.String())
-
-    # TODO: how to pass fields unprocessed back and forth?
+    metadata = colander.SchemaNode(onrm.AnyData())
 
 class Asset(onrm.Record):
     """an asset to be stored in the media database"""
@@ -57,7 +56,8 @@ class MediaDatabase(onrm.Collection):
         filename = None,
         content_length = None,
         content_type = "application/octet-stream",
-        metadata = {},
+        store_kw = {},
+        converter_kw = {},
         **kw):
         """add a file to the media database
 
@@ -76,12 +76,13 @@ class MediaDatabase(onrm.Collection):
 
         # store filepointer via store
         res = self.store.add(fp, filename=filename)
-
+        
         # TODO: add metadata
         asset = Asset(dict(
             _id = res.filename, 
             content_type = content_type, 
-            content_length = res.content_length))
+            content_length = res.content_length,
+            metadata = meta))
 
         # store in database
         self.put(asset)
