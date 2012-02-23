@@ -5,7 +5,7 @@ import mongoquery.onrm as onrm
 
 from stores import FilesystemStore # default store
 
-__all__ = ['AssetNotFound', 'MediaDatabase']
+__all__ = ['AssetNotFound', 'MediaDatabase', 'Asset', 'AssetSchema']
 
 class AssetNotFound(Exception):
     """raised if an asset was not found"""
@@ -14,7 +14,7 @@ class AssetSchema(colander.MappingSchema):
     # filename is _id
     content_length = colander.SchemaNode(colander.Integer())
     content_type = colander.SchemaNode(colander.String())
-    metadata = colander.SchemaNode(onrm.AnyData())
+    metadata = colander.SchemaNode(onrm.AnyData(), missing={})
 
 class Asset(onrm.Record):
     """an asset to be stored in the media database"""
@@ -58,6 +58,7 @@ class MediaDatabase(onrm.Collection):
         content_type = "application/octet-stream",
         store_kw = {},
         converter_kw = {},
+        metadata = {},
         **kw):
         """add a file to the media database
 
@@ -70,7 +71,6 @@ class MediaDatabase(onrm.Collection):
         :return: A dictionary containing the final filename, content length and type
         """
 
-        meta = copy.copy(kw)
         if filename is None:
             filename = unicode(uuid.uuid4())
 
@@ -78,11 +78,12 @@ class MediaDatabase(onrm.Collection):
         res = self.store.add(fp, filename=filename)
         
         # TODO: add metadata
-        asset = Asset(dict(
+        asset = self.data_class(dict(
             _id = res.filename, 
             content_type = content_type, 
             content_length = res.content_length,
-            metadata = meta))
+            metadata = metadata,
+            **kw))
 
         # store in database
         self.put(asset)
