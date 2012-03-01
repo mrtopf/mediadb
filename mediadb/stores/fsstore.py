@@ -30,6 +30,9 @@ class FilesystemStore(object):
             filename = unicode(uuid.uuid4())
 
         path = os.path.join(self.base_path, filename)
+        dirpath = os.path.split(path)[0]
+        if not os.path.exists(dirpath):
+            os.makedirs(dirpath)
 
         dest_fp = open(path, "wb")
         shutil.copyfileobj(fp, dest_fp)
